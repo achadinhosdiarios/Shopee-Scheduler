@@ -529,6 +529,16 @@
     }
     html[data-theme="dark"] .live-media-box { background: linear-gradient(135deg, rgba(var(--ar),.11), rgba(255,255,255,.02)); }
     .live-media-box img, .live-media-box video { width: 100%; height: 100%; object-fit: cover; border-radius: 13px; }
+    .media-url-area { min-height: 112px !important; font-family: var(--f-body); }
+    .media-carousel { width: 100%; display: grid; gap: 10px; }
+    .media-carousel-track { width: 100%; display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; border-radius: 14px; scrollbar-width: thin; }
+    .media-carousel-slide { flex: 0 0 100%; min-height: 170px; display: grid; place-items: center; position: relative; overflow: hidden; border-radius: 14px; scroll-snap-align: center; background: rgba(255,255,255,.32); border: 1px solid var(--line); }
+    html[data-theme="dark"] .media-carousel-slide { background: rgba(255,255,255,.04); }
+    .media-carousel-slide > a, .media-carousel-slide > video, .media-carousel-slide > .media-empty { width: 100%; min-height: 170px; }
+    .media-carousel-slide img, .media-carousel-slide video { width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; }
+    .media-carousel-index { position: absolute; top: 10px; right: 10px; z-index: 2; height: 24px; min-width: 46px; padding: 0 9px; border-radius: 99px; display: inline-grid; place-items: center; font-size: 10px; font-weight: 800; color: #fff; background: rgba(15,10,8,.66); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    .media-carousel-hint { display: flex; justify-content: center; gap: 6px; font-size: 11px; color: var(--dim); }
+    .media-carousel-dot { width: 6px; height: 6px; border-radius: 99px; background: rgba(var(--ar), .32); }
     .caption-block {
       padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,.36); margin-bottom: 10px;
     }
@@ -1073,10 +1083,10 @@
           <h3>Campos disponíveis</h3>
           <p class="hs">Todos refletindo o Apps Script atual.</p>
           <ol class="helper-list">
-            <li><strong>Tipo</strong>: Vídeo ou Imagem.</li>
+            <li><strong>Tipo</strong>: Vídeo, Imagem ou Carrossel.</li>
             <li><strong>Plataforma</strong>: onde será postado.</li>
             <li><strong>Data</strong> e <strong>Hora</strong>: publicação programada.</li>
-            <li><strong>URL da mídia</strong>: fonte da mídia a ser postada, preferencialmente Google Drive.</li>
+            <li><strong>URL da mídia</strong>: fonte da mídia a ser postada. Para Carrossel, cole um link por linha.</li>
             <li><strong>Descrição</strong>: use <strong>{link}</strong> para inserir o link do produto.</li>
           </ol>
         </article>
@@ -1212,9 +1222,10 @@
                   <div class="custom-select-options">
                     <div class="custom-option" data-value="Video">Vídeo</div>
                     <div class="custom-option" data-value="Imagem">Imagem</div>
+                    <div class="custom-option" data-value="Carrossel">Carrossel</div>
                   </div>
                 </div>
-                <p class="field-hint">Vídeo ou Imagem.</p>
+                <p class="field-hint">Vídeo, Imagem ou Carrossel.</p>
               </div>
 
               <div class="field">
@@ -1279,12 +1290,12 @@
               </div>
 
               <label class="field full">
-                <div class="field-lbl">URL Da Mídia</div>
+                <div class="field-lbl">URL(s) Da Mídia</div>
                 <div class="field-row">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l1.46-1.5a5 5 0 0 0-7.07-7.08L10.5 6.4"/><path d="M14 11a5 5 0 0 0-7.54-.54L5 12a5 5 0 0 0 7.07 7.08l1.43-1.43"/></svg>
-                  <input id="midia" type="url" placeholder="https://drive.google.com/... ou link direto" />
+                  <textarea id="midia" class="media-url-area" placeholder="https://drive.google.com/...\nhttps://drive.google.com/...\nPara Carrossel, cole um link por linha"></textarea>
                 </div>
-                <p class="field-hint">Fonte da Mídia a ser postada (GoogleDrive | Preferência).</p>
+                <p class="field-hint">Para imagem/vídeo, use um link. Para Carrossel, cole múltiplos links, um por linha.</p>
               </label>
 
               <label class="field full">
@@ -1354,7 +1365,7 @@
             <div class="caption-block">
               <h4 style="font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--dim);margin-bottom:10px">Checklist</h4>
               <div class="ck-item"><div class="ck-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></div><span>Confirme se a plataforma está correta.</span></div>
-              <div class="ck-item"><div class="ck-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></div><span>Verifique se o link da mídia abre.</span></div>
+              <div class="ck-item"><div class="ck-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></div><span>Verifique se o link da mídia abre. No Carrossel, confira todos os links.</span></div>
               <div class="ck-item"><div class="ck-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></div><span>Marque <strong>Postado = Sim</strong> apenas após publicar.</span></div>
             </div>
           </article>
@@ -2378,7 +2389,7 @@ function renderTable() {
       <td><span class="tag ${i.isPosted?'ok':'warn'}">${i.isPosted?'Postado':'Pendente'}</span></td>
       <td><div class="sheet-links">
         ${i.linkProduto?`<a class="sheet-link" href="${esc(safeUrl(i.linkProduto))}" target="_blank" rel="noopener">Produto</a>`:''}
-        ${i.midia?`<a class="sheet-link" href="${esc(safeUrl(i.midia))}" target="_blank" rel="noopener">Mídia</a>`:''}
+        ${i.midia?`<a class="sheet-link" href="${esc(safeUrl(firstMediaUrl(i.midia)))}" target="_blank" rel="noopener">${parseMediaUrls(i.midia).length > 1 ? 'Mídias' : 'Mídia'}</a>`:''}
         ${i.midia?`<a class="sheet-link" href="${esc(mediaDownloadUrl(i.midia))}" target="_blank" rel="noopener" download>Baixar</a>`:''}
       </div></td>
       <td><div class="sheet-muted">${esc(i.comentario||'—')}</div></td>
@@ -2608,8 +2619,67 @@ async function toggleStatus(item) {
 }
 
 /* ── MÍDIA RENDERS ───────────────────────────────── */
+function normalizeMediaType(tipo) {
+  return String(tipo || '')
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function isCarouselType(tipo) {
+  return normalizeMediaType(tipo) === 'carrossel' || normalizeMediaType(tipo) === 'carousel';
+}
+
+function parseMediaUrls(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return [];
+
+  const normalized = raw
+    .replace(/\r/g, '\n')
+    .split(/\n+|\s+\|\s+|\s+;\s+/)
+    .map(part => part.trim().replace(/^[-•*]\s*/, ''))
+    .filter(Boolean);
+
+  return [...new Set(normalized)];
+}
+
+function firstMediaUrl(value) {
+  return parseMediaUrls(value)[0] || '';
+}
+
 function mediaHTML(url, tipo) {
-  const u = String(url||'').trim(); if (!u) return `<div class="media-empty"><span>📷</span><span>Sem mídia</span></div>`;
+  const urls = parseMediaUrls(url);
+  const carousel = isCarouselType(tipo) || urls.length > 1;
+
+  if (!urls.length) {
+    const emptyLabel = isCarouselType(tipo) ? 'Carrossel sem mídias' : 'Sem mídia';
+    return `<div class="media-empty"><span>📷</span><span>${esc(emptyLabel)}</span></div>`;
+  }
+
+  if (carousel) return carouselHTML(urls);
+  return mediaSingleHTML(urls[0]);
+}
+
+function carouselHTML(urls) {
+  const slides = urls.map((itemUrl, index) => `
+    <div class="media-carousel-slide">
+      <span class="media-carousel-index">${index + 1}/${urls.length}</span>
+      ${mediaSingleHTML(itemUrl)}
+    </div>
+  `).join('');
+
+  const dots = urls.map(() => '<span class="media-carousel-dot"></span>').join('');
+
+  return `<div class="media-carousel" aria-label="Carrossel de mídia">
+    <div class="media-carousel-track">${slides}</div>
+    <div class="media-carousel-hint">${dots}<span>Arraste para ver</span></div>
+  </div>`;
+}
+
+function mediaSingleHTML(url) {
+  const u = String(url||'').trim();
+  if (!u) return `<div class="media-empty"><span>📷</span><span>Sem mídia</span></div>`;
   const safe = safeUrl(u); const clean = safe.split('?')[0].toLowerCase();
   const driveId = getDriveId(u);
   if (driveId) {
@@ -2622,7 +2692,7 @@ function mediaHTML(url, tipo) {
 }
 function mediaPreviewInner(url, tipo) { return mediaHTML(url, tipo); }
 function getDriveId(url) { const v = String(url||'').trim(); for (const p of [/\/file\/d\/([^/]+)/i, /[?&]id=([^&#]+)/i, /\/d\/([^/]+)/i]) { const m = v.match(p); if (m?.[1]) return decodeURIComponent(m[1]); } return ''; }
-function mediaDownloadUrl(url) { const u = String(url||'').trim(); const driveId = getDriveId(u); return driveId ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveId)}` : safeUrl(u); }
+function mediaDownloadUrl(url) { const u = firstMediaUrl(url); if (!u) return ''; const driveId = getDriveId(u); return driveId ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveId)}` : safeUrl(u); }
 
 /* ── UTILS: FEEDBACK & LOGS ──────────────────────── */
 function setConn(mode, label) { E.connStatus.classList.remove('online','offline'); if (mode) E.connStatus.classList.add(mode); E.connLabel.textContent = label; }
@@ -2783,7 +2853,7 @@ function bindEvents() {
 
 /* ── SYSTEM DESIGN AUX COMPONENT CORES ───────────── */
 function normalizeApiUrl(url) { let v = String(url || '').trim(); if (!v) return ''; v = v.replace(/^['"]|['"]$/g, '').replace(/\s+/g, ''); if (!/^https?:\/\//i.test(v)) v = `https://${v}`; try { const u = new URL(v); return u.toString().replace(/\/$/, ''); } catch { return v.replace(/\/$/, ''); } }
-function safeUrl(url) { const v = String(url||'').trim(); return /^(https?:)?\/\//i.test(v) ? v : `https://${v}`; }
+function safeUrl(url) { const v = String(url||'').trim().split(/\r?\n/)[0].trim(); if (!v) return ''; return /^(https?:)?\/\//i.test(v) ? v : `https://${v}`; }
 function esc(v) { return String(v??'').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c])); }
 function hexToRgb(hex) { const h = normalizeHex(hex); return [0,2,4].map(i => parseInt(h.slice(i,i+2), 16)); }
 function normalizeHex(hex) { let h = String(hex||'#f36b35').replace('#','').trim(); if (h.length === 3) h = h.split('').map(c=>c+c).join(''); return h.padEnd(6,'0').slice(0,6); }
