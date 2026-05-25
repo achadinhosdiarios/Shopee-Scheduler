@@ -2397,7 +2397,7 @@ function renderOverview() {
         <td><div class="sheet-title"><strong>${esc(i.titulo||'Sem título')}</strong><span>${esc((i.descricao||'').slice(0,110))}</span></div></td>
         <td><span class="tag">${esc(i.plataforma||'—')}</span></td>
         <td><span class="tag ${i.isPosted?'ok':'warn'}">${i.isPosted?'Postado':'Pendente'}</span></td>
-        <td><div class="row-actions">${i.midia?`<button class="sbtn" data-action="download-all" title="Baixar mídia(s)">${downloadIco()}</button>`:''}<button class="sbtn" data-action="viewer">Preparar</button><button class="sbtn" data-action="edit">${editIco()}</button><button class="sbtn accent" data-action="toggle">${statusIco()}</button></div></td>
+        <td><div class="row-actions"><button class="sbtn" data-action="viewer">Visualizar</button><button class="sbtn" data-action="edit">${editIco()}</button><button class="sbtn accent" data-action="toggle">${statusIco()}</button></div></td>
       </tr>`).join('')}
     </tbody>
   </table></div></div>`;
@@ -2431,11 +2431,10 @@ function renderTable() {
       <td><span class="tag ${i.isPosted?'ok':'warn'}">${i.isPosted?'Postado':'Pendente'}</span></td>
       <td><div class="sheet-links">
         ${i.midia?`<a class="sheet-link" href="${esc(safeUrl(firstMediaUrl(i.midia)))}" target="_blank" rel="noopener">${mediaCount > 1 ? `${mediaCount} mídias` : 'Mídia'}</a>`:'<span class="sheet-muted">—</span>'}
-        ${i.midia?`<button class="sheet-link" type="button" data-action="download-all">${mediaCount > 1 ? 'Baixar tudo' : 'Baixar'}</button>`:''}
       </div></td>
       <td><div class="sheet-muted">${esc(i.comentario||'—')}</div></td>
       <td><div class="row-actions">
-        <button class="sbtn accent" data-action="viewer">Preparar</button>
+        <button class="sbtn accent" data-action="viewer">Visualizar</button>
         <button class="sbtn" data-action="toggle">${statusIco()}</button>
         <button class="sbtn" data-action="edit">${editIco()}</button>
         <button class="sbtn danger" data-action="delete">${trashIco()}</button>
@@ -2454,16 +2453,15 @@ function cardHTML(i) {
     <div class="card-body">
       <div class="card-head">
         <div class="list-tags"><span class="tag">${esc(i.tipo||'—')}</span><span class="tag ${i.isPosted?'ok':'warn'}">${i.isPosted?'Postado':'Pendente'}</span></div>
-        <div class="card-acts-top">${hasMedia?`<button class="sbtn" data-action="download-all" title="${mediaCount > 1 ? 'Baixar carrossel completo' : 'Baixar mídia'}">${downloadIco()}</button>`:''}<button class="sbtn" data-action="viewer">Preparar</button><button class="sbtn" data-action="edit">${editIco()}</button><button class="sbtn danger" data-action="delete">${trashIco()}</button></div>
+        <div class="card-acts-top"><button class="sbtn accent" data-action="viewer">Visualizar</button><button class="sbtn" data-action="edit">${editIco()}</button><button class="sbtn danger" data-action="delete">${trashIco()}</button></div>
       </div>
       <h3 class="card-title">${esc(i.titulo||'Sem título')}</h3>
       <p class="card-desc">${esc((i.descricao||'').slice(0,160))}</p>
       <div class="card-meta">
         <div class="meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${esc(fmtSchedule(i))}</div>
         <div class="meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8M12 18v2"/></svg>${esc(i.plataforma||'—')}</div>
-        ${hasMedia?`<div class="meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg><button class="sheet-link" type="button" data-action="download-all">${mediaCount > 1 ? `Baixar carrossel completo (${mediaCount})` : 'Baixar mídia'}</button></div>`:''}
       </div>
-      <div class="card-acts-bot"><button class="sbtn" data-action="duplicate">Duplicar</button><button class="sbtn accent" data-action="viewer">Visualizar para postagem</button><button class="sbtn accent" data-action="toggle">${i.isPosted?'Marcar não':'Marcar feito'}</button></div>
+      <div class="card-acts-bot"><button class="sbtn" data-action="duplicate">Duplicar</button><button class="sbtn accent" data-action="toggle">${i.isPosted?'Marcar não':'Marcar feito'}</button></div>
     </div>
   </article>`;
 }
@@ -2733,6 +2731,11 @@ function openPublishViewer(item) {
             <button class="sbtn" type="button" data-viewer-action="copy-description">Copiar</button>
           </div>
           <div class="viewer-copy-box">${esc(item.descricao || '')}</div>
+        </div>
+
+        <div class="viewer-system-card">
+          <div class="viewer-system-label">Comentário interno</div>
+          <div class="viewer-system-text">${esc(item.comentario || 'Nenhum comentário interno cadastrado.')}</div>
         </div>
 
         <div class="viewer-actions">
