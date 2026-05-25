@@ -1133,7 +1133,7 @@
             <li><strong>Plataforma</strong>: onde será postado.</li>
             <li><strong>Data</strong> e <strong>Hora</strong>: publicação programada.</li>
             <li><strong>URL da mídia</strong>: fonte da mídia a ser postada. Para Carrossel, cole um link por linha.</li>
-            <li><strong>Descrição</strong>: use <strong>{link}</strong> para inserir o link do produto.</li>
+            <li><strong>Descrição</strong>: escreva a legenda completa, incluindo o link do produto diretamente no texto quando necessário.</li>
           </ol>
         </article>
       </div>
@@ -2446,7 +2446,6 @@ function renderTable() {
   bindItemActions();
 }
 
-function cardHTML
 function cardHTML(i) {
   const mediaCount = parseMediaUrls(i.midia).length;
   const hasMedia = mediaCount > 0;
@@ -2469,7 +2468,6 @@ function cardHTML(i) {
   </article>`;
 }
 
-function bindItemActions
 function bindItemActions() {
   qq('[data-row]').forEach(node => {
     const item = S.items.find(x => x.rowNumber === +node.dataset.row); if (!item) return;
@@ -2602,7 +2600,6 @@ function updatePreview() {
   E.liveMedia.innerHTML = mediaPreviewInner(E.midia.value.trim(), getCustomSelectValue(E.tipoWrapper) || 'Mídia');
 }
 
-async function handleSubmit
 async function handleSubmit(ev) {
   ev.preventDefault();
   const rn = E.rowNumber.value.trim();
