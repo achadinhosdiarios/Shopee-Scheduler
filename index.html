@@ -506,6 +506,8 @@
 
     /* ── EDITOR PAGE ─────────────────────────────────────── */
     .editor-grid { display: grid; grid-template-columns: 1fr 380px; gap: 16px; align-items: start; }
+    .edit-summary-card { margin-bottom: 16px; }
+    #editorFormMount:empty, #editFormMount:empty { display: none; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-grid .full { grid-column: 1 / -1; }
     .field-hint { font-size: 11px; color: var(--dim); line-height: 1.5; margin-top: 4px; }
@@ -1196,8 +1198,9 @@
         </div>
       </div>
 
-      <div class="editor-grid">
-        <article class="card panel card-overflow-visible">
+      <div id="editorFormMount">
+        <div class="editor-grid" id="editorGrid">
+          <article class="card panel card-overflow-visible">
           <form id="scheduleForm">
             <input type="hidden" id="rowNumber" />
             <div class="form-grid">
@@ -1356,7 +1359,32 @@
             </div>
           </article>
         </aside>
+        </div>
       </div>
+    </section>
+
+    <section class="page" data-page="edit">
+      <div class="page-h">
+        <div class="page-h-left">
+          <h2 id="editTitle">Editar agendamento</h2>
+          <p id="editSubtitle">Ajuste os dados do post selecionado sem misturar com a criação de novos itens.</p>
+        </div>
+        <div class="page-h-acts">
+          <button class="gbtn" id="editCancelBtn" type="button" data-go-page="agenda">← Agenda</button>
+        </div>
+      </div>
+
+      <article class="card panel edit-summary-card">
+        <div class="panel-h" style="margin-bottom:0">
+          <div>
+            <h2 id="editContextTitle">Item selecionado</h2>
+            <p id="editContextMeta">Revise data, hora, mídia, legenda e status antes de salvar.</p>
+          </div>
+          <span class="tag info" id="editContextBadge">Edição</span>
+        </div>
+      </article>
+
+      <div id="editFormMount"></div>
     </section>
 
     <section class="page" data-page="settings">
@@ -1512,7 +1540,7 @@ const AUTH_KEY = 'achadinhos-auth-v1';
 const LOG_KEY = 'achadinhos-ping-log-v1';
 const PALETTE = ['#f36b35','#e85d2a','#ff8a4c','#d97706','#e85c8a','#9b5de5','#3b82f6','#10b981'];
 const DEFAULT = { apiUrl:'', accent:'#f36b35', density:1, radius:20, view:'table', theme:'light', page:'overview', fontScale:1, gridOpacity:.4, blur:20, surface:'glass', motion:'on', __v5:true };
-const PAGE_LABELS = { overview: 'Resumo', agenda: 'Agenda', editor: 'Novo', settings: 'Ajustes' };
+const PAGE_LABELS = { overview: 'Resumo', agenda: 'Agenda', editor: 'Novo', edit: 'Editar', settings: 'Ajustes' };
 
 let temporarySettings = {};
 let currentCalendarDate = new Date();
@@ -1554,6 +1582,8 @@ const E = {
   openFiltersBtn: q('#openFiltersBtn'), closeFiltersBtn: q('#closeFiltersBtn'), applyFiltersBtn: q('#applyFiltersBtn'), clearFiltersBtn: q('#clearFiltersBtn'), filterOverlay: q('#filterOverlay'), filterPopover: q('#filterPopover'), filterBadge: q('#filterBadge'),
   dataZone: q('#dataZone'), agendaSummary: q('#agendaSummary'),
   scheduleForm: q('#scheduleForm'), editorTitle: q('#editorTitle'),
+  editorGrid: q('#editorGrid'), editorFormMount: q('#editorFormMount'), editFormMount: q('#editFormMount'),
+  editTitle: q('#editTitle'), editSubtitle: q('#editSubtitle'), editContextTitle: q('#editContextTitle'), editContextMeta: q('#editContextMeta'), editContextBadge: q('#editContextBadge'),
   rowNumber: q('#rowNumber'),
   midia: q('#midia'), titulo: q('#titulo'), descricao: q('#descricao'), linkProduto: q('#linkProduto'), comentario: q('#comentario'),
   saveBtn: q('#saveBtn'), resetFormBtn: q('#resetFormBtn'), duplicateCurrentBtn: q('#duplicateCurrentBtn'), insertLinkTagBtn: q('#insertLinkTagBtn'),
@@ -1997,7 +2027,7 @@ function renderPalette() {
 
 /* ── NAVIGATION ──────────────────────────────────── */
 function goPage(page, silent = false) {
-  const allowed = ['overview','agenda','editor','settings'];
+  const allowed = ['overview','agenda','editor','edit','settings'];
   const p = allowed.includes(page) ? page : 'overview';
   S.cfg.page = p;
   if (!silent) localStorage.setItem(STORAGE_KEY, JSON.stringify(S.cfg));
@@ -2007,13 +2037,14 @@ function goPage(page, silent = false) {
   E.crumbLabel.textContent = PAGE_LABELS[p] || 'Resumo';
 
   if (p === 'agenda') applyFilters();
-  if (p === 'editor') { updatePreview(); setTimeout(() => E.titulo.focus(), 80); }
+  if (p === 'editor' || p === 'edit') { updatePreview(); setTimeout(() => E.titulo.focus(), 80); }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function syncDock() {
   qq('.dock-btn').forEach(b => {
-    const active = b.dataset.pageTarget === S.cfg.page;
+    const currentPage = S.cfg.page === 'edit' ? 'agenda' : S.cfg.page;
+    const active = b.dataset.pageTarget === currentPage;
     b.classList.toggle('active', active);
     b.setAttribute('aria-current', active ? 'page' : 'false');
   });
@@ -2399,9 +2430,40 @@ function bindItemActions() {
 }
 
 /* ── FORM & PREVIEW MANAGEMENT ───────────────────── */
+function mountEditorGrid(targetPage = 'editor') {
+  const mount = targetPage === 'edit' ? E.editFormMount : E.editorFormMount;
+  if (mount && E.editorGrid && E.editorGrid.parentElement !== mount) {
+    mount.appendChild(E.editorGrid);
+  }
+}
+
+function setEditContext(item, isEdit, isDupe) {
+  if (!E.editTitle) return;
+
+  const title = (item?.titulo || '').trim();
+  const date = item?.data ? fmtDate(item.data) : '';
+  const time = item?.hora ? fmtTime(item.hora) : '';
+  const when = [date, time].filter(Boolean).join(' às ');
+
+  E.editTitle.textContent = isEdit ? 'Editar agendamento' : 'Editar dados';
+  E.editSubtitle.textContent = isEdit
+    ? 'Altere apenas o item selecionado. Ao salvar, ele será atualizado na mesma linha da planilha.'
+    : 'Revise os dados antes de criar um novo item.';
+  E.editContextTitle.textContent = title || 'Item selecionado';
+  E.editContextMeta.textContent = isEdit
+    ? `Linha ${item.rowNumber}${when ? ` • ${when}` : ''}`
+    : (isDupe ? 'Duplicando dados para criar um novo agendamento.' : 'Novo agendamento.');
+  E.editContextBadge.textContent = isEdit ? 'Edição' : 'Novo';
+}
+
 function openEditor(item=null, isDupe=false) {
+  const isEdit = Boolean(item?.rowNumber && !isDupe);
+  const targetPage = isEdit ? 'edit' : 'editor';
+
+  mountEditorGrid(targetPage);
   item ? fillForm(item, isDupe) : resetForm(false);
-  goPage('editor');
+  setEditContext(item, isEdit, isDupe);
+  goPage(targetPage);
 }
 
 function fillForm(item, isDupe) {
@@ -2432,14 +2494,16 @@ function fillForm(item, isDupe) {
   E.linkProduto.value = item.linkProduto||'';
   E.comentario.value = item.comentario||'';
   
-  E.editorTitle.textContent = isEdit ? 'Editar agendamento' : (isDupe ? 'Duplicar agendamento' : 'Novo agendamento');
+  E.editorTitle.textContent = isDupe ? 'Duplicar agendamento' : 'Novo agendamento';
   E.saveBtn.textContent = isEdit ? 'Salvar alterações' : 'Salvar agendamento';
+  setEditContext(item, isEdit, isDupe);
   updatePreview();
 }
 
 function resetForm(showToast=false) {
   E.scheduleForm.reset();
   E.rowNumber.value = '';
+  E.saveBtn.disabled = false;
   setCustomSelectValue(E.tipoWrapper, '');
   setCustomSelectValue(E.plataformaWrapper, '');
   setCustomSelectValue(E.postadoWrapper, 'Não');
@@ -2459,9 +2523,12 @@ function resetForm(showToast=false) {
 function duplicateCurrent() {
   E.rowNumber.value = '';
   setCustomSelectValue(E.postadoWrapper, 'Não');
+  mountEditorGrid('editor');
   E.editorTitle.textContent = 'Duplicar agendamento';
+  E.saveBtn.disabled = false;
   E.saveBtn.textContent = 'Salvar agendamento';
   updatePreview();
+  goPage('editor');
   toast('✦ Modo duplicar', 'Pronto para salvar como novo item.');
 }
 
@@ -2499,8 +2566,10 @@ function applyTag(desc, link) {
 async function handleSubmit(ev) {
   ev.preventDefault();
   const rn = E.rowNumber.value.trim();
+  const isEdit = Boolean(rn);
+  let saved = false;
   const payload = {
-    action: rn ? 'update' : 'add', rowNumber: rn,
+    action: isEdit ? 'update' : 'add', rowNumber: rn,
     tipo: getCustomSelectValue(E.tipoWrapper), plataforma: getCustomSelectValue(E.plataformaWrapper),
     data: getCustomSelectValue(E.dataWrapper), hora: getCustomSelectValue(E.horaWrapper), midia: E.midia.value.trim(),
     titulo: E.titulo.value.trim(), descricao: E.descricao.value.trim(),
@@ -2509,12 +2578,21 @@ async function handleSubmit(ev) {
   };
   if (!payload.tipo || !payload.plataforma || !payload.titulo) { toast('⚠️ Campos vazios', 'Preencha Tipo, Plataforma e Título.', true); return; }
   try {
-    E.saveBtn.disabled = true; E.saveBtn.textContent = 'Salvando...';
+    E.saveBtn.disabled = true;
+    E.saveBtn.textContent = isEdit ? 'Salvando alterações...' : 'Salvando...';
     await postAction(payload);
-    toast('✦ Salvo', payload.titulo);
-    await fetchItems(); goPage('agenda'); if (!rn) resetForm(false);
-  } catch (err) { toast('⚠️ Erro ao salvar', err.message, true); }
-  finally { S.disabled = false; E.saveBtn.textContent = rn ? 'Salvar alterações' : 'Salvar agendamento'; }
+    saved = true;
+    toast(isEdit ? '✦ Alterações salvas' : '✦ Salvo', payload.titulo);
+    await fetchItems();
+    resetForm(false);
+    mountEditorGrid('editor');
+    goPage('agenda');
+  } catch (err) {
+    toast('⚠️ Erro ao salvar', err.message, true);
+  } finally {
+    E.saveBtn.disabled = false;
+    E.saveBtn.textContent = saved ? 'Salvar agendamento' : (isEdit ? 'Salvar alterações' : 'Salvar agendamento');
+  }
 }
 
 async function deleteItem(item) {
@@ -2585,7 +2663,10 @@ function bindEvents() {
   E.heroNewBtn.addEventListener('click', () => openEditor());
   E.heroAgendaBtn.addEventListener('click', () => goPage('agenda'));
 
-  qq('[data-go-page]').forEach(b => b.addEventListener('click', () => goPage(b.dataset.goPage)));
+  qq('[data-go-page]').forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.goPage === 'editor') { openEditor(); return; }
+    goPage(b.dataset.goPage);
+  }));
   qq('.dock-btn').forEach(b => b.addEventListener('click', () => {
     if (b.dataset.pageTarget === 'editor') { openEditor(); return; }
     goPage(b.dataset.pageTarget);
